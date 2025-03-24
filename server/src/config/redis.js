@@ -4,13 +4,24 @@ let client;
 
 function getRedisClient() {
   if (!client) {
-    client = new Redis(process.env.REDIS_URL || {
-      host: process.env.REDIS_HOST || 'redis',
-      port: Number(process.env.REDIS_PORT) || 6379,
-      username: process.env.REDIS_USER || undefined,
-      password: process.env.REDIS_PASSWORD || undefined,
-      maxRetriesPerRequest: null,
-    });
+    // Log the REDIS_URL for debugging
+    console.log('Using REDIS_URL:', process.env.REDIS_URL);
+
+    // If REDIS_URL is provided, use it; otherwise, fallback to individual vars
+    if (process.env.REDIS_URL) {
+      client = new Redis(process.env.REDIS_URL);
+    } else {
+      const redisConfig = {
+        host: process.env.REDIS_HOST || 'redis',
+        port: Number(process.env.REDIS_PORT) || 6379,
+        username: process.env.REDIS_USER || undefined,
+        password: process.env.REDIS_PASSWORD || undefined,
+        maxRetriesPerRequest: null,
+      };
+      console.log('Falling back to individual vars:', redisConfig);  // Debug line
+      client = new Redis(redisConfig);
+    }
+
     client.on('error', (error) => console.error('Redis Client Error:', error.message));
   }
   return client;
